@@ -1,0 +1,11 @@
+<!-- This is an MSBuild C# project file. 
+MSBuild knows .csproj is C# and so the following imports are implied:
+<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+These imports were explicitly needed in the old csproj. https://github.com/dotnet/project-system/issues/628
+-->
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+</Project>
