@@ -29,12 +29,11 @@ A scan of those 2 walkthoughs should suffice to tach you the essential basics.
 
 ## The csproj
 
+### A very long 2 line build script
 
 Hopefully by now you realise that a `.csproj` is a MSBuild project file.
 
-Let's start with the first required line of the project file.
-
-`test.csproj`:
+Lets start by creating a very simple project file, `anything.csproj` in its own folder.
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
@@ -46,16 +45,68 @@ This is the new simplified SDK style format.
 
 There are a [bunch](https://github.com/dotnet/project-system/issues/628) [of](https://github.com/dotnet/project-system/issues/40) [issues](https://github.com/microsoft/msbuild/issues/699) on GitHub where you can see the evolution of this change. 
 
-If we run `MSBuild.exe test.csproj` it crashes because `TargetFramework` is required.
-Whats interesting about this is what it does do, if we run `MSBuild.exe test.csproj -preprocess:monster.txt`.
-I ended up with about 11 thousand lines of msbuild mayhem.
-So thats what the `Sdk` attribute does.
+Open any command line at the location of the new `.csproj` and run MSBuild.
 
-> MSBuild likes to play hide and seek.
+> __Finding MSBuild__: MSBuild likes to play hide and seek.
 > Since 2019 the official MSBuild is a part of Visual Studio living with it, there is no official separate MSBuild installer anymore.
 > A normal location it might be found: `/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe`.
 > One way to get it without Visual Studio is to get the JetBrains fork from [http://jb.gg/msbuild](http://jb.gg/msbuild), you can read about it [here](https://blog.jetbrains.com/dotnet/2018/04/13/introducing-jetbrains-redistributable-msbuild/).
 > I trust JetBrains, they know what they are doing.
 > You could put MsBuild in path for convenience but keep in mind that there will probably be some wierd build in the future that gets upset by this.
 
+MSBuild it automatically finds the `.proj`, tries running it then crashes because `TargetFramework` is required.
+However this is interesting because a lot happens before the error.
+When I run `MSBuild.exe -preprocess:monster.txt` I end up with __little over 12 thousand lines__ of msbuild mayhem.
 
+> The [-preprocess arg](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2019#preprocess) aggregates all the imported files into one giant project file for us.
+> This can be useful for tracking down rogue properties and arguments used deep in build.
+
+The SDK element creates the equivalent of:
+
+```xml
+<Project>
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+<!-- The contents of your original project file would be here -->
+
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
+```
+
+The sdk files are automatically resolved, see [How to: Use MSBuild project SDKs](https://docs.microsoft.com/en-us/visualstudio/msbuild/how-to-use-project-sdk?view=vs-2019) for further info.
+
+You can try reading the `sdk.props` and `sdk.targets` but it is not easy to follow the trail of referenced files.
+It makes more sense to have a peek at the monster.txt output. 
+
+Before you close monster.txt in horror, note that the `DefaultTargets` has been set as `build`.
+I have not discovered what set our default target for us, but its good to know.
+
+Now let's try making the csproj more complete:
+
+```
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+</Project>
+```
+
+> We are using `netcoreapp2.1` not `2.2` for a good reason. TODO: LTS
+
+Run `MSBuild.exe`.
+Now we have an error message telling us to run NuGet restore.
+This is significant in that it points out that NuGet is an essential part of the build process, even though we have no packages yet.
+
+So, do a `NuGet restore anything.csproj`
+
+> You may need to download [Nuget.exe](https://www.nuget.org/downloads) and put it in path on your machine.
+> It is a handy tool to have in path.
+
+Now when we run MSBuild ([result](https://gist.github.com/t3hmun/f7ea75dcb37a6a5c1237efceb12d8bee)) it complains that there is no code with a main function.
+In this result you can see it called the C# compiler and passed in all the netcore libraries.
+This is what the `TargetFramework` does.
+
+I highly suspect our project with no code does not need all those references.
+
+The [Additions to the csproj format for .NET Core](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj) page does even more explining as to whats changed, there is quite a lot.
+The most obvious point is [that you no longger have to include `.cs` files](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects) in the project, they are included automatically.
