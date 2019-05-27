@@ -30,9 +30,9 @@ A scan of those 2 walkthoughs should suffice to tach you the essential basics.
 ## The csproj
 
 
-Hopefullyby now you realise that a `.csproj` is a MSBuild project file.
-The `.csproj` should be a full set of instuctions on how to build the project,
-however there are a large amount of magical assumtions baked into MSBuild, I'll point htem out as we go along.
+Hopefully by now you realise that a `.csproj` is a MSBuild project file.
+
+Let's start with the first required line of the project file.
 
 `test.csproj`:
 
@@ -41,7 +41,15 @@ however there are a large amount of magical assumtions baked into MSBuild, I'll 
 </Project>
 ```
 
-Now `MSBuild test.csproj` and see an actually helpful error - you need a `TargetFramework`.
+Now some people might not be familiar with this kind of MsBuild file.
+This is the new simplified SDK style format.
+
+There are a [bunch](https://github.com/dotnet/project-system/issues/628) [of](https://github.com/dotnet/project-system/issues/40) [issues](https://github.com/microsoft/msbuild/issues/699) on GitHub where you can see the evolution of this change. 
+
+If we run `MSBuild.exe test.csproj` it crashes because `TargetFramework` is required.
+Whats interesting about this is what it does do, if we run `MSBuild.exe test.csproj -preprocess:monster.txt`.
+I ended up with about 11 thousand lines of msbuild mayhem.
+So thats what the `Sdk` attribute does.
 
 > MSBuild likes to play hide and seek.
 > Since 2019 the official MSBuild is a part of Visual Studio living with it, there is no official separate MSBuild installer anymore.
@@ -49,4 +57,5 @@ Now `MSBuild test.csproj` and see an actually helpful error - you need a `Target
 > One way to get it without Visual Studio is to get the JetBrains fork from [http://jb.gg/msbuild](http://jb.gg/msbuild), you can read about it [here](https://blog.jetbrains.com/dotnet/2018/04/13/introducing-jetbrains-redistributable-msbuild/).
 > I trust JetBrains, they know what they are doing.
 > You could put MsBuild in path for convenience but keep in mind that there will probably be some wierd build in the future that gets upset by this.
+
 
