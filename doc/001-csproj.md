@@ -91,7 +91,10 @@ Now let's try making the csproj more complete:
 </Project>
 ```
 
-> We are using `netcoreapp2.1` not `2.2` for a good reason. TODO: LTS
+> We are using `netcoreapp2.1` not `2.2` for a good reason. 
+> 2.1 is LTS, 3 years of updates, 2.2 is only guaranted to have 3 months security updates after the release of Core 3. 
+> The next version is a major version so upgading may require serious effort. 
+> There is no point in dooming a current project to insecurity unless you absolutely require a new feature.
 
 Run `MSBuild.exe`.
 Now we have an error message telling us to run NuGet restore.
@@ -110,3 +113,6 @@ I highly suspect our project with no code does not need all those references.
 
 The [Additions to the csproj format for .NET Core](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj) page does even more explining as to whats changed, there is quite a lot.
 The most obvious point is [that you no longger have to include `.cs` files](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects) in the project, they are included automatically.
+
+Finaly we can move on to writing code.
+Our build script / project file is only 5 lines long, nice and simple.
