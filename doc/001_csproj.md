@@ -15,7 +15,7 @@ There are many parts ot that such as the parameters passed to `csc.exe` and copy
 > *The _correct dlls_ is complicated because Core now uses the [Runtime Package Store](https://docs.microsoft.com/en-us/dotnet/core/deploying/runtime-store) and on top of that there is all the conficting dependant version shennigans that we'll get into later.
 
 > Early verions of Core attemtped use `dotnet.exe` with the now depreciated `project.json` instead of MSBuild but that is history.
-> The monster called MSBuild rules all. `dotnet.exe` is now a convenience wrapper on MSBuild with handy features.
+> The monster called MSBuild rules all. The build functionality of `dotnet.exe` is now a convenience wrapper on MSBuild with handy features.
 
 MSBuild does a huge amount of magic for us making builds easy*.
 There are 2 decent walthroughs by Microsoft that give you a practical rundown of MSBuild, 
@@ -23,15 +23,32 @@ There are 2 decent walthroughs by Microsoft that give you a practical rundown of
 [Create an MSBuild project file from scratch](https://docs.microsoft.com/en-us/visualstudio/msbuild/walkthrough-creating-an-msbuild-project-file-from-scratch?view=vs-2019).
 A scan of those 2 walkthoughs should suffice to tach you the essential basics.
 
+> *Like many people I've engaged in violent brawls with MSBuild in the past, but with a bit of perseverence you can come to an understanding.
 
-> *Like many people I've engaged in violent brawls with MSBuild in the past, but with a bit of perseverence you can win/survive.
+
+### Getting MSBuild
+
+The easiest thing is to use the MSBuild that comes with the [Core SDK](https://dotnet.microsoft.com/download).
+The Core SDK installs the `dotnet` tool into path, which gives you access to MSBuild by typing `dotnet msbuild`.
+The versions of MSBuild and Roslyn installed in the SDK (`C:\Program Files\dotnet\sdk`) are not normal Windows exes,
+they are magical Core portable binaries so need the `dotnet` tool to run them.
+We'll talk about the magic later.
+
+It is handly to have the normal exe versions of MSBuild and Roslyn for comparing core to how things work on the full framework.
+Microsoft have stopped distributing the normal `MSBuild.exe` and Roslyn `csc.exe` separately from Visual Studio.
+The normal locations are now `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\MSBuild.exe`
+and `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\Roslyn`.
+
+If you want the exe versions without installing Visual Studio the can download it from JetBrains [http://jb.gg/msbuild](http://jb.gg/msbuild), you can read about it [here](https://blog.jetbrains.com/dotnet/2018/04/13/introducing-jetbrains-redistributable-msbuild/).
 
 
 ## The csproj
 
-### A very long 2 line build script
 
-Hopefully by now you realise that a `.csproj` is a MSBuild project file.
+### A Very Long 2 Line Build Script
+
+
+Hopefully by now you realise that a `.csproj` is a MSBuild project file, a build script.
 
 Lets start by creating a very simple project file, `anything.csproj` in its own folder.
 
@@ -45,18 +62,11 @@ This is the new simplified SDK style format.
 
 There are a [bunch](https://github.com/dotnet/project-system/issues/628) [of](https://github.com/dotnet/project-system/issues/40) [issues](https://github.com/microsoft/msbuild/issues/699) on GitHub where you can see the evolution of this change. 
 
-Open any command line at the location of the new `.csproj` and run MSBuild.
-
-> __Finding MSBuild__: MSBuild likes to play hide and seek.
-> Since 2019 the official MSBuild is a part of Visual Studio living with it, there is no official separate MSBuild installer anymore.
-> A normal location it might be found: `/c/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe`.
-> One way to get it without Visual Studio is to get the JetBrains fork from [http://jb.gg/msbuild](http://jb.gg/msbuild), you can read about it [here](https://blog.jetbrains.com/dotnet/2018/04/13/introducing-jetbrains-redistributable-msbuild/).
-> I trust JetBrains, they know what they are doing.
-> You could put MsBuild in path for convenience but keep in mind that there will probably be some wierd build in the future that gets upset by this.
+Open any command line at the location of the new `.csproj` and run `dotnet msbuild`.
 
 MSBuild it automatically finds the `.proj`, tries running it then crashes because `TargetFramework` is required.
 However this is interesting because a lot happens before the error.
-When I run `MSBuild.exe -preprocess:monster.txt` I end up with __little over 12 thousand lines__ of msbuild mayhem.
+When I run `dotnet msbuild -preprocess:monster.txt` I end up with __little over 12 thousand lines__ of msbuild mayhem.
 
 > The [-preprocess arg](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-command-line-reference?view=vs-2019#preprocess) aggregates all the imported files into one giant project file for us.
 > This can be useful for tracking down rogue properties and arguments used deep in build.
@@ -81,6 +91,10 @@ It makes more sense to have a peek at the monster.txt output.
 Before you close monster.txt in horror, note that the `DefaultTargets` has been set as `build`.
 I have not discovered what set our default target for us, but its good to know.
 
+
+### A Complete 5 Line Build Script
+
+
 Now let's try making the csproj more complete:
 
 ```
@@ -96,23 +110,27 @@ Now let's try making the csproj more complete:
 > The next version is a major version so upgading may require serious effort. 
 > There is no point in dooming a current project to insecurity unless you absolutely require a new feature.
 
-Run `MSBuild.exe`.
+Run `dotnet msbuild`.
 Now we have an error message telling us to run NuGet restore.
 This is significant in that it points out that NuGet is an essential part of the build process, even though we have no packages yet.
 
-So, do a `NuGet restore anything.csproj`
+So, do a `dotnet restore`
 
-> You may need to download [Nuget.exe](https://www.nuget.org/downloads) and put it in path on your machine.
-> It is a handy tool to have in path.
+> `dotnet restore` runs the `restore` msbuild target.
+> Since 2017 NuGet has been integrated into MSBuild making the [pack and restore targets](https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets) always available. 
+> You can still run [nuget.exe](https://www.nuget.org/downloads) manually, specifying the project as an argument, same result.
+
+It might not look like nuget has anything to restore but it actually produces a long list of framwork packages in a json file:
+
+The [Nuget Restore](https://docs.microsoft.com/en-us/nuget/tools/cli-ref-restore) docs say: "_When used with NuGet 4.0+ and the PackageReference format, generates a `<project>.nuget.props` file, if needed, in the obj folder. (The file can be omitted from source control.)_"
+The PackageReference format consists of `<PackageReference>` elements, which you'll find aplenty in monster.txt, the core framework libs specificaly.
 
 Now when we run MSBuild ([result](https://gist.github.com/t3hmun/f7ea75dcb37a6a5c1237efceb12d8bee)) it complains that there is no code with a main function.
 In this result you can see it called the C# compiler and passed in all the netcore libraries.
-This is what the `TargetFramework` does.
 
-I highly suspect our project with no code does not need all those references.
 
-The [Additions to the csproj format for .NET Core](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj) page does even more explining as to whats changed, there is quite a lot.
-The most obvious point is [that you no longger have to include `.cs` files](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects) in the project, they are included automatically.
+The [Additions to the csproj format for .NET Core](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj) page explains more of the things the new style projects magically do.
+The most obvious point is [that you no longger have to include `.cs` files](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects) in the project, they are included automatically (by included we mean passed onto the compiler to be built).
 
 Finaly we can move on to writing code.
 Our build script / project file is only 5 lines long, nice and simple.
