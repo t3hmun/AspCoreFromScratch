@@ -1,4 +1,4 @@
-# Compile Somthing
+# Compile Something
 
 > You must have the [Core SDK](https://dotnet.microsoft.com/download) installed, giving you access to the `dotnet` tool.
 
@@ -31,16 +31,16 @@ It should happily output the greeting.
 This might feel like a lot of magic happed. It did. Also I'll explain that and why this isn't an exe.
 
 
-## The 'Simple' CSC Eqiuvalent On .NET Framwork
+## The 'Simple' CSC Equivalent On .NET Framework
 
 If we run the standard full framework `csc.exe` on our `Program.cs` we get a simple .NET 4 Windows exe that just works if you run Program.exe at a console.
 
-I'm using powershell because it makes it easier to construct the arguments and experiminet with them.
+I'm using powershell because it makes it easier to construct the arguments and experiment with them.
 
 [csc_framework.ps1](https://github.com/t3hmun/AspCoreFromScratch/blob/master/002_compile_something/csc_framework.ps1)
 
 ```powershell
-# Dont forget to replace `community` with the edition of VS you have installed. 
+# Don't forget to replace `community` with the edition of VS you have installed. 
 $csc="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\Roslyn\csc.exe"
 
 # The nostdlib argument removes the mscorlib reference, we add it back in explicitly as a demonstration.
@@ -79,3 +79,4 @@ $mscorlibFullPath="-reference:C:\Windows\Microsoft.NET\Framework\v4.0.30319\msco
 
 In order to output a Core file we must include Core references.
 
+read nate hostpolicy

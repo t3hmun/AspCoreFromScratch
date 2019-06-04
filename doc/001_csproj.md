@@ -12,16 +12,16 @@ So we'll start with a `.csproj` file (I'll explain the hidden magic), and that r
 Like most Microsoft dev projects Core uses MSBuild to automate the build process.
 There are many parts ot that such as the parameters passed to `csc.exe` and copying the copying of the correct dlls* and debug files to the output.
 
-> *The _correct dlls_ is complicated because Core now uses the [Runtime Package Store](https://docs.microsoft.com/en-us/dotnet/core/deploying/runtime-store) and on top of that there is all the conficting dependant version shennigans that we'll get into later.
+> *The _correct dlls_ is complicated because Core now uses the [Runtime Package Store](https://docs.microsoft.com/en-us/dotnet/core/deploying/runtime-store) and on top of that there is all the conflicting dependant version shenanigans that we'll get into later.
 
-> Early verions of Core attemtped use `dotnet.exe` with the now depreciated `project.json` instead of MSBuild but that is history.
+> Early versions of Core attempted use `dotnet.exe` with the now depreciated `project.json` instead of MSBuild but that is history.
 > The monster called MSBuild rules all. The build functionality of `dotnet.exe` is now a convenience wrapper on MSBuild with handy features.
 
 MSBuild does a huge amount of magic for us making builds easy*.
-There are 2 decent walthroughs by Microsoft that give you a practical rundown of MSBuild, 
+There are 2 decent walkthroughs by Microsoft that give you a practical run-down of MSBuild, 
 [Using MSBuild](https://docs.microsoft.com/en-us/visualstudio/msbuild/walkthrough-using-msbuild?view=vs-2019) and 
 [Create an MSBuild project file from scratch](https://docs.microsoft.com/en-us/visualstudio/msbuild/walkthrough-creating-an-msbuild-project-file-from-scratch?view=vs-2019).
-A scan of those 2 walkthoughs should suffice to tach you the essential basics.
+A scan of those 2 walkthoughs should suffice to teach you the essential basics.
 
 > *Like many people I've engaged in violent brawls with MSBuild in the past, but with a bit of perseverence you can come to an understanding.
 
@@ -130,7 +130,7 @@ In this result you can see it called the C# compiler and passed in all the netco
 
 
 The [Additions to the csproj format for .NET Core](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj) page explains more of the things the new style projects magically do.
-The most obvious point is [that you no longger have to include `.cs` files](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects) in the project, they are included automatically (by included we mean passed onto the compiler to be built).
+The most obvious point is [that you no longer have to include `.cs` files](https://docs.microsoft.com/en-us/dotnet/core/tools/csproj#default-compilation-includes-in-net-core-projects) in the project, they are included automatically (by included we mean passed onto the compiler to be built).
 
 Finaly we can move on to writing code.
 Our build script / project file is only 5 lines long, nice and simple.
