@@ -115,15 +115,19 @@ What we do know is that these are the core files used to start-up and run Core a
 
 ## runtimeconfig.json
 
-[Program.runtimeconfig.json]()
+[Program.runtimeconfig.json](https://github.com/t3hmun/AspCoreFromScratch/blob/master/002_compile_something/Program.runtimeconfig.json)
 
 ```json
 {
   "runtimeOptions": {
     "framework": {
       "name": "Microsoft.NETCore.App",
-      "version": "2.0.0"
+      "version": "2.1.0"
     }
   }
 }
 ```
+
+Core uses this config to automatically use the appropriate framework from `C:\Program Files\dotnet\shared`, 
+which means we don't have to copy all those files to run the program.
+
