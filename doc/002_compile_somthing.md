@@ -28,14 +28,16 @@ It should happily output the greeting.
 > "The dotnet build command is equivalent to `dotnet msbuild -restore -target:Build`"
 > For convenience we can use this from now on.
 
-This might feel like a lot of magic happed. It did. Also I'll explain that and why this isn't an exe.
+This might feel like a lot of magic happened. It did. Also I'll explain that and why this isn't an exe.
 
 
-## The 'Simple' CSC Equivalent On .NET Framework
+## Simple 'CSC' Compilation and Running on the .Net Full Framework
 
-If we run the standard full framework `csc.exe` on our `Program.cs` we get a simple .NET 4 Windows exe that just works if you run Program.exe at a console.
+Compiling and running a simple program was a simple process on the full .NET framework
+Running the standard full framework `csc.exe` on our `Program.cs` produces a simple .NET 4 Windows exe that just works if you run Program.exe at a console.
 
-I'm using powershell because it makes it easier to construct the arguments and experiment with them.
+> I'm using powershell to make it easier to construct the arguments and experiment with different combinations.
+> You can enter the commands directly if you prefer.
 
 [csc_framework.ps1](https://github.com/t3hmun/AspCoreFromScratch/blob/master/002_compile_something/csc_framework.ps1)
 
@@ -44,18 +46,18 @@ I'm using powershell because it makes it easier to construct the arguments and e
 $csc="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\Roslyn\csc.exe"
 
 # The nostdlib argument removes the mscorlib reference, we add it back in explicitly as a demonstration.
-# csc automatically looks in C:\Windows\Microsoft.NET\Framework for dlls without full path not present in the current folder.
+# csc automatically looks in C:\Windows\Microsoft.NET\Framework for references without full path not present in the current folder.
 $mscorlib="-reference:mscorlib.dll"
 
 # The deterministic parameter stops csc adding a guid or timestamp so outputs are always identical given the same inputs.
 & $csc Program.cs -deterministic -noconfig -nostdlib $mscorlib
 ```
 
-The `-noconfig` argument stops csc from using the default `csc.rsp` file that contains refrences to some of the most common framework libararies.
+The `-noconfig` argument stops csc from using the default `csc.rsp` file that contains references to some of the most common framework libraries.
 
-If we skip all the arguments I added after `-deterministic` we get the same result as the defaults take care of everything.
+The same result is produced if `Program.cs -deterministic` are the only arguments because the defaults (csc.rsp and mscorlib) take care of everything.
 
-We can run the same build using the csc provided with the core SDK and get exactly the same [deterministic](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/deterministic-compiler-option) result (I compared the hashes of each Program.exe).
+Running the same build using the csc provided with the core SDK produces exactly the same [deterministic](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/deterministic-compiler-option) result (I compared the hashes of each Program.exe).
 
 [csc_using_core.ps1](https://github.com/t3hmun/AspCoreFromScratch/blob/master/002_compile_something/csc_framework_using_core.ps1)
 
@@ -74,9 +76,42 @@ $mscorlibFullPath="-reference:C:\Windows\Microsoft.NET\Framework\v4.0.30319\msco
 & $dotnet $csccore Program.cs -deterministic -noconfig -nostdlib $mscorlibFullPath
 ```
 
+However you came here to learn about Core not .Net Full Framework...
+
 
 ## The Simple CSC eqivalen on Core
 
-In order to output a Core file we must include Core references.
+### Program.cs only
 
-read nate hostpolicy
+In order to output a Core file we must include references to Core dlls instead of full framework dlls.
+
+[csc_core_using_core.ps1](https://github.com/t3hmun/AspCoreFromScratch/blob/master/002_compile_something/csc_core_using_core.ps1)
+
+```powershell
+# The Core SDK version of csc is a portable dll.
+$csccore="C:\Program Files\dotnet\sdk\2.2.300\Roslyn\bincore\csc.dll"
+
+# All Core DLLs can be retrieved from NuGet.
+# The SDK install keeps the fallback folder handy so it doesn't have to restore the packagers from the internet.
+
+# mscorlib isn't complete in core, its just a bunch of redirects to other libs.
+$mscorlib="-reference:C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1\mscorlib.dll"
+# Runtime contains the fundamental primitive types such as System.Object and System.Int16
+$runtime="-reference:C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1\System.Runtime.dll"
+$console="-reference:C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.1.0\ref\netcoreapp2.1\System.Console.dll"
+
+& dotnet $csccore Program.cs -noconfig -nostdlib $mscorlib $runtime $console
+```
+
+This time the `Program.exe` produced doesn't just work if you try to run it directly.
+This is because the compiled output is a .NET Core Portable application, not a valid windows exe.
+For this reason the default convention in the MSBuild script is to always output as `.dll` and not `.exe`, slightly less misleading.
+
+The `dotnet` tool is used to run .NET Core portable applications. 
+However if we try that now `dotnet Program.cs` it fails, complaining it can't find `hostpolicy.dll`.
+Copy the entire contents of `C:\Program Files\dotnet\shared\Microsoft.NETCore.App\2.2.5` next to `Program.exe` and `dotnet Program.exe` should run successfully.
+I'm going to draw the line here and say I don't understand what all of these files are doing.
+What we do know is that these are the core files used to start-up and run Core applications, so they are always required.
+
+## runtimeconfig.json
+
