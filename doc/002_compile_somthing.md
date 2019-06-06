@@ -115,3 +115,15 @@ What we do know is that these are the core files used to start-up and run Core a
 
 ## runtimeconfig.json
 
+[Program.runtimeconfig.json]()
+
+```json
+{
+  "runtimeOptions": {
+    "framework": {
+      "name": "Microsoft.NETCore.App",
+      "version": "2.0.0"
+    }
+  }
+}
+```
