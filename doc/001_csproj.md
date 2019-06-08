@@ -120,10 +120,10 @@ So, do a `dotnet restore`
 > Since 2017 NuGet has been integrated into MSBuild making the [pack and restore targets](https://docs.microsoft.com/en-us/nuget/reference/msbuild-targets) always available. 
 > You can still run [nuget.exe](https://www.nuget.org/downloads) manually, specifying the project as an argument, same result.
 
-It might not look like nuget has anything to restore but it actually produces a long list of framwork packages in a json file:
+It might not look like nuget has anything to restore but it actually produces a long list of framework packages in a json file:
 
 The [Nuget Restore](https://docs.microsoft.com/en-us/nuget/tools/cli-ref-restore) docs say: "_When used with NuGet 4.0+ and the PackageReference format, generates a `<project>.nuget.props` file, if needed, in the obj folder. (The file can be omitted from source control.)_"
-The PackageReference format consists of `<PackageReference>` elements, which you'll find aplenty in monster.txt, the core framework libs specificaly.
+The PackageReference format consists of `<PackageReference>` elements, which you'll find aplenty in monster.txt, the core framework libs specifically.
 
 Now when we run MSBuild ([result](https://gist.github.com/t3hmun/f7ea75dcb37a6a5c1237efceb12d8bee)) it complains that there is no code with a main function.
 In this result you can see it called the C# compiler and passed in all the netcore libraries.
