@@ -1,5 +1,10 @@
 # Compile Something
 
+In this article we'll look at how compiling C# works without csproj files, using csc directly.
+This will help give you some clues to what your csproj msbuild script is doing.
+We start with a old full framework example and then look at how things have changed with .NET Core;
+both the tooling and the results are a bit different. 
+
 > You must have the [Core SDK](https://dotnet.microsoft.com/download) installed, giving you access to the `dotnet` tool.
 
 ## Instant Demo
@@ -131,3 +136,14 @@ What we do know is that these are the core files used to start-up and run Core a
 Core uses this config to automatically use the appropriate framework from `C:\Program Files\dotnet\shared`, 
 which means we don't have to copy all those files to run the program.
 
+## deps.json
+
+I'm feeling tired so go read Nate McMAsters lovely series of posts:
+
+https://natemcmaster.com/blog/2017/12/21/netcore-primitives/
+ This is what I've been talking about but with different details.
+
+https://natemcmaster.com/blog/2018/08/29/netcore-primitives-2/  
+ This article is mentions the important fact the the `<PackageReference>` to `Microsoft.AspNetCore.App` is special and totally reliant on the SDK.
+
+https://natemcmaster.com/blog/2019/01/09/netcore-primitives-3/
