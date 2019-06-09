@@ -17,8 +17,13 @@ namespace _003_asp
             CreateWebHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) 
+        {
+            var builder = new WebHostBuilder();
+            builder.UseKestrel();
+            //builder.UseContentRoot(Directory.GetCurrentDirectory());
+            builder.UseStartup<Startup>();
+            return builder;
+        }
     }
 }
